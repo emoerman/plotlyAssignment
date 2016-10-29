@@ -1,0 +1,72 @@
+---
+title: "Data products assignment week 3"
+author: "E. Moerman"
+date: "10/27/2016"
+output: ioslides_presentation
+---
+
+## Data products assignment week 3
+
+
+### Employment after leaving school
+
+The graph on the next page shows the effect of education level on employment after leaving a
+specific school type of secondary education (Dutch 
+MBO schools).
+
+The data consists of the school leavers in the school years 2007/2008, 2008/2009 and 2009/2010 for all schools of this type (MBO) in the Netherlands.
+
+Check out the detailed explanation on the pages after the graph.
+
+***
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(plotly)
+
+# Getting the source data
+schoolLeavers <- read.csv("https://duo.nl/open_onderwijsdata/images/14.-werkende-uitstromers-per-instelling%2C-domein%2C-opleiding-sbb%2C-diploma-2007-2010.csv", sep=";")
+
+# I'm not interested in the total count of the education level, so I remove it here.
+schoolLeavers <- schoolLeavers[!schoolLeavers$DIPLOMA=="totaal",]
+
+# For privacy reasons the number of people leaving a school / study / level combinations is set to 0 when the actual number is less than 10. This means these rows are not very useful. I therefore remove them.
+schoolLeavers <- schoolLeavers[!schoolLeavers$AANTAL.MBO.VERLATERS==0,]
+
+# This is the percentage of school leavers with a job, however small.
+schoolLeavers$EmployedPerc <- 100 * schoolLeavers$AANTAL.WERKENDEN / schoolLeavers$AANTAL.MBO.VERLATERS
+
+# This is the percentage of school leavers with a job for at least 12 hours per week
+schoolLeavers$EmployedLargerJobPerc <- 100 * schoolLeavers$AANTAL.WERKENDEN.12.UUR.OF.MEER / schoolLeavers$AANTAL.MBO.VERLATERS
+
+# Relabeling education level.
+levels(schoolLeavers$DIPLOMA)[levels(schoolLeavers$DIPLOMA)=="Geen diploma"] <- "Not graduated"
+levels(schoolLeavers$DIPLOMA)[levels(schoolLeavers$DIPLOMA)=="Niveau diploma 1"] <- "Level 1"
+levels(schoolLeavers$DIPLOMA)[levels(schoolLeavers$DIPLOMA)=="Niveau diploma 2"] <- "Level 2"
+levels(schoolLeavers$DIPLOMA)[levels(schoolLeavers$DIPLOMA)=="Niveau diploma 3"] <- "Level 3"
+levels(schoolLeavers$DIPLOMA)[levels(schoolLeavers$DIPLOMA)=="Niveau diploma 4"] <- "Level 4 (highest)"
+
+plot_ly(schoolLeavers, x=~EmployedPerc, y=~EmployedLargerJobPerc, size=~AANTAL.MBO.VERLATERS, color=~DIPLOMA, type="scatter", mode="markers") %>% 
+        layout(title = "Education level impact for employment rate of school leavers",
+               xaxis = list(title = "Employment (% of leavers)"),
+               yaxis = list(title = "% jobs over 12 hrs / week"))
+
+```
+
+## Explanation of the graph (1)
+
+The horizontal axis represents the percentage of school leavers that is employed, so has a job however small. 
+
+The vertical line represents the percentage of school leavers that is employed in a job of at least 12 hours a week.
+
+The colors represent the level of education achieved at the moment school is left. Level 1 is the lowest level and level 4 is the highest level possible in this school type.
+
+Each dot represents a unique combination of school / study / education level. The size of the dots represent the total number of students leaving that specific combination of school / study / education level.
+
+## Explanation of the graph (2)
+
+Note that the line at 45 degrees represent the points where all employed students that left their school / study / education level had a job of at least 12 hours a week.
+
+Points below that line represent school / study / education level combinations where some had a job for less than 12 hours a week.
+
+The further a point below the 45 degree angle line the lower the percentage of school leavers with a job of at least 12 hours a week. This means the higher the percentage of school leavers with a job for less than 12 hours a week.
